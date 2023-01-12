@@ -39,9 +39,10 @@ def train(cfg_param = None, using_gpus = None):
                               drop_last=True,
                               shuffle=True)
 
-    for i, batch in enumerate(train_loader):
-        img, targets, anno_path = batch
-        print(f"iter {i}, img {img}, targets {targets}, anno_path {anno_path}")
+    model = Darknet53()
+    # for i, batch in enumerate(train_loader):
+    #     img, targets, anno_path = batch
+    #     print(f"iter {i}, img {img}, targets {targets}, anno_path {anno_path}")
     
 def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
