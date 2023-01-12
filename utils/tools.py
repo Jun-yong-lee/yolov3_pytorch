@@ -1,4 +1,6 @@
 import numpy as np
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
 
 # parse the yolov3 configuration
 def parse_hyperparm_config(path):
@@ -68,3 +70,15 @@ def xywh2xyxy_np(x : np.array):
     y[..., 2] = x[..., 0] + x[..., 2] / 2 # maxx
     y[..., 3] = x[..., 1] + x[..., 3] / 2 # maxy
     return y
+
+def drawBox(img):
+    img = img * 255
+    
+    if img.shape[0] == 3:
+        img_data = np.array(np.transpose(img, (1, 2, 0)), dtype=np.uint8)
+        img_data = Image.fromarray(img_data)
+    
+    # draw = ImageDraw.Draw(img_data)
+    
+    plt.imshow(img_data)
+    plt.show()       
