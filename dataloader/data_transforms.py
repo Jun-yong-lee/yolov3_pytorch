@@ -14,10 +14,11 @@ def get_transformations(cfg_param = None, is_train = None):
         data_transform = tf.Compose([AbsoluteLabels(),
                                      DefaultAug(),
                                      RelativeLabels(),
-                                     ResizeImage()])
+                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),])
     else:
         data_transform = tf.Compose([AbsoluteLabels(),
-                                     RelativeLabels()]) 
+                                     RelativeLabels(),
+                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),]) 
     return data_transform
 
 # absolute bbox
@@ -41,7 +42,17 @@ class RelativeLabels(object):
         h, w, _ = image.shape
         label[:, [1, 3]] /= w # cx, w
         label[:, [2, 4]] /= h # cy, h
-        return image, label    
+        return image, label
+    
+class ResizeImage(object):
+    def __init__(self, new_size, interpolation=cv2.INTER_LINEAR):
+        self.new_size = tuple(new_size)
+        self.interpolation = interpolation
+
+    def __call__(self, data):
+        image, label = data
+        image = cv2.resize(image, self.new_size, interpolation=self.interpolation)
+        return image, label
 
 class ImgAug(object):
     def __init__(self, augmentations=[]):
