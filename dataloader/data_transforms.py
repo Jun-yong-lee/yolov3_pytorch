@@ -9,9 +9,11 @@ from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 
 def get_transformations(cfg_param = None, is_train = None):
     if is_train:
-        data_transform = tf.Compose([AbsoluteLabels()])
+        data_transform = tf.Compose([AbsoluteLabels(),
+                                     RelativeLabels()])
     else:
-        data_transform = tf.Compose([AbsoluteLabels()]) 
+        data_transform = tf.Compose([AbsoluteLabels(),
+                                     RelativeLabels()]) 
     return data_transform
 
 # absolute bbox
@@ -24,4 +26,15 @@ class AbsoluteLabels(object):
         h, w, _ = image.shape
         label[:, [1, 3]] *= w # cx, w
         label[:, [2, 4]] *= h # cy, h
+        return image, label
+
+class RelativeLabels(object):
+    def __init__(self, ):
+        pass
+
+    def __call__(self, data):
+        image, label = data
+        h, w, _ = image.shape
+        label[:, [1, 3]] /= w # cx, w
+        label[:, [2, 4]] /= h # cy, h
         return image, label
