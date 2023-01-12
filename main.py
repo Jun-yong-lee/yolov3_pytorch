@@ -7,6 +7,7 @@ from torch.utils.data.dataloader import DataLoader
 from utils.tools import *
 from dataloader.yolodata import *
 from dataloader.data_transforms import *
+from model.yolov3 import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description="YOLOV3_PYTORCH arguments")
@@ -39,10 +40,11 @@ def train(cfg_param = None, using_gpus = None):
                               drop_last=True,
                               shuffle=True)
 
-    model = Darknet53()
-    # for i, batch in enumerate(train_loader):
-    #     img, targets, anno_path = batch
-    #     print(f"iter {i}, img {img}, targets {targets}, anno_path {anno_path}")
+    model = Darknet53(args.cfg, cfg_param, training=True)
+    
+    for name, param in model.named_parameters():
+        print(f"name : {name}, shape : {param.shape}")
+
     
 def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
