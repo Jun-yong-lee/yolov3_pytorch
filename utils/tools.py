@@ -81,4 +81,4 @@ def drawBox(img):
     # draw = ImageDraw.Draw(img_data)
     
     plt.imshow(img_data)
-    plt.show()       
+    plt.show()
