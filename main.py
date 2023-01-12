@@ -37,8 +37,8 @@ def train(cfg_param = None, using_gpus = None):
                               shuffle=True)
 
     for i, batch in enumerate(train_loader):
-        print(i, len(batch))
-        print(batch)
+        img, targets, anno_path = batch
+        print(f"iter {i}, img {img}, targets {targets}, anno_path {anno_path}")
     
 def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
