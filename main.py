@@ -36,8 +36,10 @@ if __name__ == "__main__":
     args = parse_args()
     
     # cfg parser
-    module_defs = parse_hyperparm_config(args.cfg)
-    print(module_defs)
+    net_data = parse_hyperparm_config(args.cfg)
+    print(net_data)
+    cfg_param = get_hyperparm(net_data)
+    
     if args.mode == "train": # python main.py --gpus 0 --mode train --cfg yolov3_kitti.cfg
         # training
         train()
