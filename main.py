@@ -2,6 +2,7 @@ from ast import parse
 import torch
 import argparse
 import os, sys
+from torch.utils.data.dataloader import DataLoader
 
 from utils.tools import *
 from dataloader.yolodata import *
@@ -24,8 +25,21 @@ def parse_args():
 
 def train(cfg_param = None, using_gpus = None):
     print("train")
-    # dataloader
+    # dataloader 6881 images /batch : 4
+    train_data = Yolodata(is_train=True,
+                        transform=None,
+                        cfg_param=cfg_param)
+    train_loader = DataLoader(train_data,
+                              batch_size=cfg_param['batch'],
+                              num_workers=0,
+                              pin_memory=True,
+                              drop_last=True,
+                              shuffle=True)
 
+    for i, batch in enumerate(train_loader):
+        print(i, len(batch))
+        print(batch)
+    
 def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
 
