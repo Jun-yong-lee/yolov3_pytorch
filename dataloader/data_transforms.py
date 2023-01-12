@@ -12,7 +12,9 @@ from utils.tools import *
 def get_transformations(cfg_param = None, is_train = None):
     if is_train:
         data_transform = tf.Compose([AbsoluteLabels(),
-                                     RelativeLabels()])
+                                     DefaultAug(),
+                                     RelativeLabels(),
+                                     ResizeImage()])
     else:
         data_transform = tf.Compose([AbsoluteLabels(),
                                      RelativeLabels()]) 
@@ -39,7 +41,7 @@ class RelativeLabels(object):
         h, w, _ = image.shape
         label[:, [1, 3]] /= w # cx, w
         label[:, [2, 4]] /= h # cy, h
-        return image, label
+        return image, label    
 
 class ImgAug(object):
     def __init__(self, augmentations=[]):
@@ -81,3 +83,8 @@ class ImgAug(object):
 
         return img, boxes
     
+class DefaultAug(ImgAug):
+    def __init__(self, ):
+        self.augmentations = iaa.Sequential([
+                iaa.Sharpen((0.0, 0.1)),
+                iaa.Affine(rotate=(-0, 0), translate_percent=(-0.1, 0.1), scale=(0.8, 1.5))])
