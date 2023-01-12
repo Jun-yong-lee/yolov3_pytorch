@@ -14,11 +14,13 @@ def get_transformations(cfg_param = None, is_train = None):
         data_transform = tf.Compose([AbsoluteLabels(),
                                      DefaultAug(),
                                      RelativeLabels(),
-                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),])
+                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),
+                                     ToTensor(),])
     else:
         data_transform = tf.Compose([AbsoluteLabels(),
                                      RelativeLabels(),
-                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),]) 
+                                     ResizeImage(new_size=(cfg_param['in_width'], cfg_param['in_height'])),
+                                     ToTensor(),]) 
     return data_transform
 
 # absolute bbox
@@ -43,6 +45,17 @@ class RelativeLabels(object):
         label[:, [1, 3]] /= w # cx, w
         label[:, [2, 4]] /= h # cy, h
         return image, label
+    
+class ToTensor(object):
+    def __init__(self,):
+        pass
+
+    def __call__(self, data):
+        image, labels = data
+        image = torch.tensor(np.transpose(np.array(image, dtype=float) / 255, (2, 0, 1)), dtype=torch.float32) # HWC -> CHW
+        labels = torch.FloatTensor(np.array(labels))
+        
+        return image, labels
     
 class ResizeImage(object):
     def __init__(self, new_size, interpolation=cv2.INTER_LINEAR):
