@@ -21,13 +21,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def train():
+def train(cfg_param = None, using_gpus = None):
     print("train")
+    # dataloader
 
-def eval():
+def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
 
-def demo():
+def demo(cfg_param = None, using_gpus = None):
     print("demo")
 
 if __name__ == "__main__":
@@ -37,18 +38,21 @@ if __name__ == "__main__":
     
     # cfg parser
     net_data = parse_hyperparm_config(args.cfg)
-    print(net_data)
-    cfg_param = get_hyperparm(net_data)
+
+    cfg_param = get_hyperparam(net_data)
+    print(cfg_param)
+    
+    using_gpus = [int(g) for g in args.gpus]
     
     if args.mode == "train": # python main.py --gpus 0 --mode train --cfg yolov3_kitti.cfg
         # training
-        train()
+        train(cfg_param = cfg_param)
     elif args.mode == "eval":
         # evaluation
-        eval()
+        eval(cfg_param = cfg_param)
     elif args.mode == "demo":
         # demo
-        demo()
+        demo(cfg_param = cfg_param)
     else:
         print("unknown mode")
         
