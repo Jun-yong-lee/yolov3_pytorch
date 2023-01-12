@@ -1,3 +1,4 @@
+import numpy as np
 
 # parse the yolov3 configuration
 def parse_hyperparm_config(path):
@@ -59,3 +60,11 @@ def get_hyperparam(cfg):
                     'ignore_class':ignore_class}
         else:
             continue
+        
+def xywh2xyxy_np(x : np.array):
+    y = np.zeros_like(x)
+    y[..., 0] = x[..., 0] - x[..., 2] / 2 # minx
+    y[..., 1] = x[..., 1] - x[..., 3] / 2 # miny
+    y[..., 2] = x[..., 0] + x[..., 2] / 2 # maxx
+    y[..., 3] = x[..., 1] + x[..., 3] / 2 # maxy
+    return y
