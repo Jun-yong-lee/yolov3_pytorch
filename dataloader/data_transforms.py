@@ -40,3 +40,44 @@ class RelativeLabels(object):
         label[:, [1, 3]] /= w # cx, w
         label[:, [2, 4]] /= h # cy, h
         return image, label
+
+class ImgAug(object):
+    def __init__(self, augmentations=[]):
+        self.augmentations = augmentations
+
+    def __call__(self, data):
+        # unpack data
+        img, boxes = data
+
+        # convert xywh to xyxy (minx miny maxx maxy)
+        boxes = np.array(boxes)
+        boxes[:, 1:] = xywh2xyxy_np(boxes[:, 1:])
+
+        # convert bbox to imgaug format
+        bounding_boxes = BoundingBoxesOnImage(
+            [BoundingBox(*box[1:], label=box[0]) for box in boxes],
+            shape=img.shape)
+
+        if len(bounding_boxes) != 0:
+            origin_box = bounding_boxes[0]
+
+        # apply augmentations
+        img, bounding_boxes = self.augmentations(image=img,
+                                                 bounding_boxes=bounding_boxes)
+        
+        bounding_boxes = bounding_boxes.clip_out_of_image()
+        
+        # convert bounding boxes to np.array()
+        boxes = np.zeros((len(bounding_boxes), 5))
+        for box_idx, box in enumerate(bounding_boxes):
+            x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
+
+            # returns (x, y, w, h)
+            boxes[box_idx, 0] = box.label
+            boxes[box_idx, 1] = ((x1 + x2) / 2)
+            boxes[box_idx, 2] = ((y1 + y2) / 2)
+            boxes[box_idx, 3] = (x2 - x1)
+            boxes[box_idx, 4] = (y2 - y1)
+
+        return img, boxes
+    
