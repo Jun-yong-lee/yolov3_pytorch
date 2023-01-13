@@ -12,7 +12,7 @@ def make_conv_layer(layer_idx : int, modules : nn.Module, layer_info : dict, in_
     pad = int((size - 1) // 2)
     # print("pad = ", int(layer_info['pad']), "size_pad = ", pad) # -> doesn't match int(layer_info['pad']), int((size - 1) // 2)
     modules.add_module('layer_' + str(layer_idx) + '_conv',
-                       nn.Conv2d(in_channel, filters, size, stride, pad))
+                       nn.Conv2d(in_channel, filters, size, stride, pad, bias=False))
     
     if layer_info['batch_normalize'] == '1':
         modules.add_module('layer_' + str(layer_idx) + '_bn',

@@ -76,6 +76,17 @@ def train(cfg_param = None, using_gpus = None):
         
     model = model.to(device)
     
+    # load checkpoint
+    # if checkpoint is existed, load the previous checkpoint
+    # python main.py --mode train --cfg C:/study/yolo_data/yolov3_kitti640480_pretrained/yolov3_kitti640480.cfg \ 
+    # --checkpoint C:/study/yolo_data/yolov3_kitti640480_pretrained/model_epoch6.pth
+    if args.checkpoint is not None:
+        print("load pretrained model ", args.checkpoint)
+        checkpoint = torch.load(args.checkpoint, map_location=device)
+        # for key, value in checkpoint['model_state_dict'].items():
+        #     print(key, value)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        
     torch_writer = SummaryWriter("./output")
  
     trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device, torch_writer=torch_writer)
