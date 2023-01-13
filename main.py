@@ -26,6 +26,25 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def collate_fn(batch):
+    batch = [data for data in batch if data is not None]
+    # skip invalid data
+    if len(batch) == 0:
+        return
+    
+    imgs, targets, anno_path = list(zip(*batch))
+    
+    imgs = torch.stack([img for img in imgs])
+    
+    for i, boxes in enumerate(targets):
+        # insert index of batch
+        boxes[:,0] = i
+        print(boxes)
+        
+    targets = torch.cat(targets, 0)
+    
+    return imgs, targets, anno_path
+
 def train(cfg_param = None, using_gpus = None):
     print("train")
     # dataloader 6881 images /batch : 4
@@ -39,7 +58,8 @@ def train(cfg_param = None, using_gpus = None):
                               num_workers=0,
                               pin_memory=True,
                               drop_last=True,
-                              shuffle=True)
+                              shuffle=True,
+                              collate_fn=collate_fn)
 
     model = Darknet53(args.cfg, cfg_param, training=True)
     model.train()

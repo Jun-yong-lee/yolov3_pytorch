@@ -3,6 +3,7 @@ import torch
 import torch.optim as optim
 
 from utils.tools import *
+from train.loss import *
 
 
 class Trainer:
@@ -14,6 +15,7 @@ class Trainer:
         self.device = device
         self.epoch = 0
         self.iter = 0
+        self.yololoss = Yololoss(self.device, self.model.n_classes)
         self.optimizer = optim.SGD(model.parameters(), lr=hparam['lr'], momentum=hparam['momentum'])
         
         self.scheduler_multistep = optim.lr_scheduler.MultiStepLR(self.optimizer,
@@ -30,6 +32,8 @@ class Trainer:
             input_img = input_img.to(self.device, non_blocking=True)
             
             output = self.model(input_img)
+            
+            self.yololoss.compute_loss(output, targets, self.model.yolo_layers)
             
             # get loss between output and target
             

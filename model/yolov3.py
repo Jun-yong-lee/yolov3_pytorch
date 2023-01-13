@@ -35,9 +35,9 @@ def make_upsample_layer(layer_idx : int, modules : nn.Module, layer_info : dict)
     modules.add_module('layer_' + str(layer_idx) + '_upsample',
                        nn.Upsample(scale_factor=stride, mode='nearest'))
 
-class YoloLayer(nn.Module):
+class Yololayer(nn.Module):
     def __init__(self, layer_info : dict, in_width : int, in_height : int, is_train : bool):
-        super(YoloLayer, self).__init__()
+        super(Yololayer, self).__init__()
         self.n_classes = int(layer_info['classes'])
         self.ignore_thresh = float(layer_info['ignore_thresh'])
         self.box_attr = self.n_classes + 5 # box[4] + objectness[1] + class_prob[n_classes]
@@ -78,6 +78,7 @@ class Darknet53(nn.Module):
         self.n_classes = int(param['classes'])
         self.module_cfg = parse_model_config(cfg)
         self.module_list = self.set_layer(self.module_cfg)
+        self.yolo_layers = [layer[0] for layer in self.module_list if isinstance(layer[0], Yololayer)]
         self.training = training
 
     def set_layer(self, layer_info):
@@ -102,7 +103,7 @@ class Darknet53(nn.Module):
                 make_upsample_layer(layer_idx, modules, info)
                 in_channels.append(in_channels[-1])
             elif info['type'] == 'yolo':
-                yololayer = YoloLayer(info, self.in_width, self.in_height, self.training)
+                yololayer = Yololayer(info, self.in_width, self.in_height, self.training)
                 modules.add_module('layer_' + str(layer_idx) + '_yolo', yololayer)
                 in_channels.append(in_channels[-1])
             
