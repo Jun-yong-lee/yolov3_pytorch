@@ -41,11 +41,18 @@ def train(cfg_param = None, using_gpus = None):
                               shuffle=True)
 
     model = Darknet53(args.cfg, cfg_param, training=True)
+    model.train()
+    for i, batch in enumerate(train_loader):
+        img, targets, anno_path = batch
+        
+        output = model(img)
+        
+        print(f"output len : {len(output)}, 0th shape : {output[0].shape}")
+        sys.exit(1)
     
-    for name, param in model.named_parameters():
-        print(f"name : {name}, shape : {param.shape}")
+    # for name, param in model.named_parameters():
+    #     print(f"name : {name}, shape : {param.shape}")
 
-    
 def eval(cfg_param = None, using_gpus = None):
     print("evaluation")
 
