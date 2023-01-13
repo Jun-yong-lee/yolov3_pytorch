@@ -10,6 +10,8 @@ from dataloader.data_transforms import *
 from model.yolov3 import *
 from train.trainer import *
 
+from tensorboardX import SummaryWriter
+
 def parse_args():
     parser = argparse.ArgumentParser(description="YOLOV3_PYTORCH arguments")
     parser.add_argument("--gpus", type=int, nargs='+', default=[], help="List of GPU device id")
@@ -73,6 +75,8 @@ def train(cfg_param = None, using_gpus = None):
         device = torch.device("cpu")
         
     model = model.to(device)
+    
+    torch_writer = SummaryWriter("./output")
 
     trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device)
     trainer.run()
