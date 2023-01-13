@@ -54,10 +54,30 @@ class Trainer:
                 for ln, lv in zip(loss_name, loss_list):
                     self.torch_writer.add_scalar(ln, lv, self.iter)
         return loss
-                    
-        
+    
+    # evalutation              
+    def run_eval(self):
+        for i, batch in enumerate(self.train_loader):
+            # drop the batch when invalid values
+            if batch is None:
+                continue
+            input_img, targets, anno_path = batch
+            
+            input_img = input_img.to(self.device, non_blocking=True)
+            
+            with torch.no_grad():
+                output = self.model(input_img)
+        return    
+    
     def run(self):
         while True:
+            if self.max_batch <= self.iter:
+                break
+            
+            # evaluation
+            self.model.eval()
+            self.run_eval()
+
             self.model.train()
             # loss calculation
             loss = self.run_iter()
