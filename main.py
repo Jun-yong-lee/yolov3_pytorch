@@ -8,6 +8,7 @@ from utils.tools import *
 from dataloader.yolodata import *
 from dataloader.data_transforms import *
 from model.yolov3 import *
+from train.trainer import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description="YOLOV3_PYTORCH arguments")
@@ -43,13 +44,8 @@ def train(cfg_param = None, using_gpus = None):
     model = Darknet53(args.cfg, cfg_param, training=True)
     model.train()
     model.initialize_weights()
-    for i, batch in enumerate(train_loader):
-        img, targets, anno_path = batch
-        
-        output = model(img)
-        
-        print(f"output len : {len(output)}, 0th shape : {output[0].shape}")
-        sys.exit(1)
+
+    train = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param)
     
     # for name, param in model.named_parameters():
     #     print(f"name : {name}, shape : {param.shape}")
