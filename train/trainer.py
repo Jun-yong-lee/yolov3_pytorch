@@ -60,9 +60,16 @@ class Trainer:
         while True:
             self.model.train()
             # loss calculation
-            
-            self.run_iter()
+            loss = self.run_iter()
             self.epoch += 1
+            
+            # save model (checkpoint)
+            checkpoint_path = os.path.join("./output", "model_epoch" + str(self.epoch) + ".pth")
+            torch.save({'epoch' : self.epoch,
+                       'iteration' : self.iter,
+                       'model_state_dict' : self.model.state_dict(),
+                       'optimizer_state_dict' : self.optimizer.state_dict(),
+                       'loss' : loss}, checkpoint_path)
             
 
         

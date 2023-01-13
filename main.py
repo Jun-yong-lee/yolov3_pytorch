@@ -41,7 +41,7 @@ def collate_fn(batch):
     for i, boxes in enumerate(targets):
         # insert index of batch
         boxes[:,0] = i
-        print(boxes)
+        # print(boxes)
         
     targets = torch.cat(targets, 0)
     
@@ -78,8 +78,10 @@ def train(cfg_param = None, using_gpus = None):
     
     torch_writer = SummaryWriter("./output")
 
-    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device)
+    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device, torch_writer=torch_writer)
     trainer.run()
+    
+    # tensorboard --logdir=./output --port 8888
     
     # for name, param in model.named_parameters():
     #     print(f"name : {name}, shape : {param.shape}")
