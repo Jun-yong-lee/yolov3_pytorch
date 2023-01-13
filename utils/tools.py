@@ -1,7 +1,9 @@
 import numpy as np
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
+import tqdm
 import torch
+import torchvision
 
 # parse model configuration
 def parse_model_config(path):
@@ -138,7 +140,62 @@ def bbox_iou(box1, box2, xyxy=False, eps=1e-9):
     
     return iou
 
+def cxcy2minmax(box):
+    y = box.new(box.shape)
+    xmin = box[..., 0] - box[..., 2] / 2
+    ymin = box[..., 1] - box[..., 3] / 2
+    xmax = box[..., 0] + box[..., 2] / 2
+    ymax = box[..., 1] + box[..., 3] / 2
+    
+    y[..., 0] = xmin
+    y[..., 1] = ymin
+    y[..., 2] = xmax
+    y[..., 3] = ymax
+    return y
 
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
+def non_max_suppression(prediction, conf_thresh=0.1, iou_thresh=0.1):
+    # num of class
+    nc = prediction.shape[2] - 5
+    
+    # setting
+    max_wh = 4096
+    max_det = 300
+    max_nms = 30000
+    
+    output = [torch.zeros((0, 6), device='cpu')] * prediction.shape[0]
+    
+    for xi, x in enumerate(prediction):
+        x = x[x[..., 4] > conf_thresh]
+        
+        if not x.shape[0]:
+            continue
+        
+        x[:, 5:] *= x[:, 4:5] # class *= objectness
+        
+        box = cxcy2minmax(x[:, :4])
+        
+        conf, j = x[:, 5:].max(1, keepdim=True)
+        x = torch.cat((box, conf, j.float()), dim=1)[conf.view(-1) > conf_thresh]
+        
+        # number of boxes
+        n = x.shape[0]
+        if not n:
+            continue
+        elif n > max_nms:
+            x = x[x[:, 4].argsort(descending=True)[:max_nms]]
+            
+        c = x[:, 5:6] * max_wh
+        
+        boxes, scores = x[:, :4] + c, x[:, 4]
+        
+        i = torchvision.ops.nms(boxes, scores, iou_thresh)
+        
+        if i.shape[0] > max_det:
+            i = i[:max_det]
+            
+        output[xi] = x[i].detach().cpu()
+    return output

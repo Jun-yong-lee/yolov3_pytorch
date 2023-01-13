@@ -35,41 +35,8 @@ def make_upsample_layer(layer_idx : int, modules : nn.Module, layer_info : dict)
     modules.add_module('layer_' + str(layer_idx) + '_upsample',
                        nn.Upsample(scale_factor=stride, mode='nearest'))
 
-class Yololayer(nn.Module):
-    def __init__(self, layer_info : dict, in_width : int, in_height : int, is_train : bool):
-        super(Yololayer, self).__init__()
-        self.n_classes = int(layer_info['classes'])
-        self.ignore_thresh = float(layer_info['ignore_thresh'])
-        self.box_attr = self.n_classes + 5 # box[4] + objectness[1] + class_prob[n_classes]
-        mask_idxes = [int(x) for x in layer_info["mask"].split(",")]
-        anchor_all = [int(x) for x in layer_info["anchors"].split(",")]
-        anchor_all = [(anchor_all[i],anchor_all[i+1]) for i in range(0,len(anchor_all),2)]
-        self.anchor = torch.tensor([anchor_all[x] for x in mask_idxes])
-        self.in_width = in_width
-        self.in_height = in_height
-        self.stride = None
-        self.lw = None
-        self.lh = None
-        self.is_train = is_train
-
-    def forward(self, x):
-        # x is input, [N C H W]
-        self.lw, self.lh = x.shape[3], x.shape[2]
-        self.anchor = self.anchor.to(x.device)
-        self.stride = torch.tensor([torch.div(self.in_width, self.lw, rounding_mode='floor'),
-                                    torch.div(self.in_height, self.lh, rounding_mode='floor')]).to(x.device)
-        
-        # if kitti data. n_classes is 8. C = (8 + 5) * 3 = 39
-        # [batch, box_attrib * anchor, lh, lw] ex) [1, 39, 19, 19]
-        
-        # 4 dim [batch, box_attrib * anchor, lh, lw] -> 5dim [batch, anchor, box_attrib, lw, lh]
-        # -> [batch, anchor, lh, lw, box_attrib]
-        x = x.view(-1, self.anchor.shape[0], self.box_attr, self.lh, self.lw).permute(0, 1, 3, 4, 2).contiguous()
-        
-        return x
-
 class Darknet53(nn.Module):
-    def __init__(self, cfg, param, training):
+    def __init__(self, cfg, param):
         super().__init__()
         self.batch = int(param['batch'])
         self.in_channels = int(param['in_channels'])
@@ -78,8 +45,51 @@ class Darknet53(nn.Module):
         self.n_classes = int(param['classes'])
         self.module_cfg = parse_model_config(cfg)
         self.module_list = self.set_layer(self.module_cfg)
-        self.yolo_layers = [layer[0] for layer in self.module_list if isinstance(layer[0], Yololayer)]
-        self.training = training
+        self.yolo_layers = [layer[0] for layer in self.module_list if isinstance(layer[0], self.Yololayer)]
+
+    class Yololayer(nn.Module):
+        def __init__(self, layer_info : dict, in_width : int, in_height : int):
+            super().__init__()
+            self.n_classes = int(layer_info['classes'])
+            self.ignore_thresh = float(layer_info['ignore_thresh'])
+            self.box_attr = self.n_classes + 5 # box[4] + objectness[1] + class_prob[n_classes]
+            mask_idxes = [int(x) for x in layer_info["mask"].split(",")]
+            anchor_all = [int(x) for x in layer_info["anchors"].split(",")]
+            anchor_all = [(anchor_all[i],anchor_all[i+1]) for i in range(0,len(anchor_all),2)]
+            self.anchor = torch.tensor([anchor_all[x] for x in mask_idxes])
+            self.in_width = in_width
+            self.in_height = in_height
+            self.stride = None
+            self.lw = None
+            self.lh = None
+
+        def forward(self, x):
+            # x is input, [N C H W]
+            self.lw, self.lh = x.shape[3], x.shape[2]
+            self.anchor = self.anchor.to(x.device)
+            self.stride = torch.tensor([torch.div(self.in_width, self.lw, rounding_mode='floor'),
+                                        torch.div(self.in_height, self.lh, rounding_mode='floor')]).to(x.device)
+            
+            # if kitti data. n_classes is 8. C = (8 + 5) * 3 = 39
+            # [batch, box_attrib * anchor, lh, lw] ex) [1, 39, 19, 19]
+            
+            # 4 dim [batch, box_attrib * anchor, lh, lw] -> 5dim [batch, anchor, box_attrib, lw, lh]
+            # -> [batch, anchor, lh, lw, box_attrib]
+            x = x.view(-1, self.anchor.shape[0], self.box_attr, self.lh, self.lw).permute(0, 1, 3, 4, 2).contiguous()
+            
+            if not self.training:
+                anchor_grid = self.anchor.view(1, -1, 1, 1, 2).to(x.device)
+                grids = self._make_grid(nx=self.lw, ny=self.lh).to(x.device)
+                # get outputs
+                x[..., 0:2] = (torch.sigmoid(x[..., 0:2]) + grids) * self.stride # center xy
+                x[..., 2:4] = torch.exp(x[..., 2:4]) * anchor_grid # width height
+                x[..., 4:] = torch.sigmoid(x[..., 4:]) # obj, conf
+                x = x.view(x.shape[0], -1, self.box_attr)
+            return x
+        
+        def _make_grid(self, nx, ny):
+            yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
+            return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
     def set_layer(self, layer_info):
         module_list = nn.ModuleList()
@@ -103,7 +113,7 @@ class Darknet53(nn.Module):
                 make_upsample_layer(layer_idx, modules, info)
                 in_channels.append(in_channels[-1])
             elif info['type'] == 'yolo':
-                yololayer = Yololayer(info, self.in_width, self.in_height, self.training)
+                yololayer = self.Yololayer(info, self.in_width, self.in_height)
                 modules.add_module('layer_' + str(layer_idx) + '_yolo', yololayer)
                 in_channels.append(in_channels[-1])
             
@@ -146,5 +156,5 @@ class Darknet53(nn.Module):
                 layers = [int(y) for y in name["layers"].split(",")]
                 x = torch.cat([layer_result[l] for l in layers], dim=1)
                 layer_result.append(x)
-        return yolo_result
+        return yolo_result if self.training else torch.cat(yolo_result, dim=1)
     

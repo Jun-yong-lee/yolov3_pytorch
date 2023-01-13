@@ -62,8 +62,20 @@ def train(cfg_param = None, using_gpus = None):
                               drop_last=True,
                               shuffle=True,
                               collate_fn=collate_fn)
+    
+    eval_transform = get_transformations(cfg_param=cfg_param, is_train=False)
+    eval_data = Yolodata(is_train=False,
+                         transform=eval_transform,
+                         cfg_param=cfg_param)
+    eval_loader = DataLoader(eval_data,
+                             batch_size=cfg_param['batch'],
+                             num_workers=0,
+                             pin_memory=True,
+                             drop_last=False,
+                             shuffle=False,
+                             collate_fn=collate_fn)
 
-    model = Darknet53(args.cfg, cfg_param, training=True)
+    model = Darknet53(args.cfg, cfg_param)
     model.train()
     model.initialize_weights()
 
@@ -78,8 +90,8 @@ def train(cfg_param = None, using_gpus = None):
     
     # load checkpoint
     # if checkpoint is existed, load the previous checkpoint
-    # python main.py --mode train --cfg C:/study/yolo_data/yolov3_kitti640480_pretrained/yolov3_kitti640480.cfg \ 
-    # --checkpoint C:/study/yolo_data/yolov3_kitti640480_pretrained/model_epoch6.pth
+    # python main.py --mode train --cfg yolov3_kitti640480.cfg \
+    # --checkpoint C:/study/yolo_data/yolov3_kitti640480_pretrained/model_epoch6.pth   
     if args.checkpoint is not None:
         print("load pretrained model ", args.checkpoint)
         checkpoint = torch.load(args.checkpoint, map_location=device)
@@ -90,7 +102,7 @@ def train(cfg_param = None, using_gpus = None):
         
     torch_writer = SummaryWriter("./output")
  
-    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device, torch_writer=torch_writer)
+    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=eval_loader, hparam=cfg_param, device=device, torch_writer=torch_writer)
     trainer.run()
     
     # tensorboard --logdir=./output --port 8888

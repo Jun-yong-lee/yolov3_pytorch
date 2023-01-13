@@ -57,7 +57,7 @@ class Trainer:
     
     # evalutation              
     def run_eval(self):
-        for i, batch in enumerate(self.train_loader):
+        for i, batch in enumerate(self.eval_loader):
             # drop the batch when invalid values
             if batch is None:
                 continue
@@ -67,6 +67,9 @@ class Trainer:
             
             with torch.no_grad():
                 output = self.model(input_img)
+                best_box_list = non_max_suppression(output, conf_thresh=0.1, iou_thresh=0.1)
+                
+                print(f"eval output : {output.shape}, best_box_list : {len(best_box_list)}, {best_box_list[0].shape}")
         return    
     
     def run(self):
