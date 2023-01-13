@@ -45,7 +45,16 @@ def train(cfg_param = None, using_gpus = None):
     model.train()
     model.initialize_weights()
 
-    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param)
+    # print(f"GPU : {torch.cuda.is_available()}")
+    # set device
+    if torch.cuda.is_available():
+        device = torch.device("cuda:0")
+    else:
+        device = torch.device("cpu")
+        
+    model = model.to(device)
+
+    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device)
     trainer.run()
     
     # for name, param in model.named_parameters():
