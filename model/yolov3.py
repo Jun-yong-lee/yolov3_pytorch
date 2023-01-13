@@ -123,7 +123,6 @@ class Darknet53(nn.Module):
             elif isinstance(m, nn.Linear):
                 nn.init.kaiming_uniform_(m.weight)
                 nn.init.constant_(m.bias, 0)
-        
 
     def forward(self, x):
         yolo_result = []
