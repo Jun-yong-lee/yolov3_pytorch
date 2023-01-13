@@ -85,7 +85,8 @@ def train(cfg_param = None, using_gpus = None):
         checkpoint = torch.load(args.checkpoint, map_location=device)
         # for key, value in checkpoint['model_state_dict'].items():
         #     print(key, value)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+        # strict=False -> solve Unexpected key(s) error
         
     torch_writer = SummaryWriter("./output")
  

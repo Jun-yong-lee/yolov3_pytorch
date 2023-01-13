@@ -23,7 +23,7 @@ def make_conv_layer(layer_idx : int, modules : nn.Module, layer_info : dict, in_
     if layer_info['activation'] == 'relu':
         modules.add_module('layer_' + str(layer_idx) + '_act',
                            nn.ReLU())  
-        
+
 def make_shortcut_layer(layer_idx : int, modules : nn.Module):
     modules.add_module('layer_' + str(layer_idx) + "_shortcut", nn.Identity())
       
