@@ -38,7 +38,8 @@ class Yololoss(nn.Module):
                 pxy = torch.sigmoid(ps[...,0:2])
                 pwh = torch.exp(ps[...,2:4]) * tanchors[pidx]
                 pbox = torch.cat((pxy, pwh), 1)
-                print(pbox)
+                # assignment
+                iou = bbox_iou(pbox, tbox[pidx])
 
             
 
