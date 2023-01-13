@@ -36,7 +36,7 @@ class Yololoss(nn.Module):
             if num_targets:
                 ps = pout[batch_id, anchor_id, gy, gx] # [batch, anchor, grid_h, grid_w, box_attrib]
                 pxy = torch.sigmoid(ps[...,0:2])
-                pwh = torch.exp(ps[2:4]) * tanchors[pidx]
+                pwh = torch.exp(ps[...,2:4]) * tanchors[pidx]
                 pbox = torch.cat((pxy, pwh), 1)
                 print(pbox)
 
@@ -86,7 +86,8 @@ class Yololoss(nn.Module):
             a = t[:, 6].long()
             
             # add indices
-            indices.append((b, a, gj.clamp_(0, gain[3] - 1), gi.clamp_(0, gain[2] - 1)))
+            indices.append((b, a, gj.clamp(0, gain[3] - 1).long(), gi.clamp(0, gain[2] - 1).long()))
+            # indices.append((b, a, gj.clamp(0, gain[3] - 1), gi.clamp(0, gain[2] - 1)))
             
             # add target_box
             tboxes.append(torch.cat((gxy - gij, gwh),dim=1))
