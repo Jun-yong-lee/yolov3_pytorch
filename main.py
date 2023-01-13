@@ -77,7 +77,7 @@ def train(cfg_param = None, using_gpus = None):
     model = model.to(device)
     
     torch_writer = SummaryWriter("./output")
-
+ 
     trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param, device=device, torch_writer=torch_writer)
     trainer.run()
     
