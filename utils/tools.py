@@ -137,3 +137,8 @@ def bbox_iou(box1, box2, xyxy=False, eps=1e-9):
     iou = inter / union
     
     return iou
+
+
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']

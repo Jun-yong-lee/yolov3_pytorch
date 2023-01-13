@@ -5,7 +5,6 @@ import torch.optim as optim
 from utils.tools import *
 from train.loss import *
 
-
 class Trainer:
     def __init__(self, model, train_loader, eval_loader, hparam, device):
         self.model = model
@@ -33,11 +32,20 @@ class Trainer:
             
             output = self.model(input_img)
             
+            # get loss between output and target
             loss, loss_list = self.yololoss.compute_loss(output, targets, self.model.yolo_layers)
             
-            # get loss between output and target
+            # get gradients
+            loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+            self.scheduler_multistep.step(self.iter)
+            self.iter += 1
+
+            loss_name = ['total_loss', 'obj_loss', 'cls_loss', 'box_loss']
             
-            print(f"output - len : {len(output)}, shape : {output[0].shape}")
+            if i % 10 == 0:
+                print(f"epoch {self.epoch} / iter {self.iter} lr {get_lr(self.optimizer)} loss {loss.item()}")
         
     def run(self):
         while True:
