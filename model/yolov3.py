@@ -25,10 +25,10 @@ def make_conv_layer(layer_idx : int, modules : nn.Module, layer_info : dict, in_
                            nn.ReLU())  
         
 def make_shortcut_layer(layer_idx : int, modules : nn.Module):
-    modules.add_module('layer_' + str(layer_idx) + "_shortcut", nn.Sequential())
+    modules.add_module('layer_' + str(layer_idx) + "_shortcut", nn.Identity())
       
 def make_route_layer(layer_idx : int, modules : nn.Module):
-    modules.add_module('layer_' + str(layer_idx) + "_route", nn.Sequential())
+    modules.add_module('layer_' + str(layer_idx) + "_route", nn.Identity())
     
 def make_upsample_layer(layer_idx : int, modules : nn.Module, layer_info : dict):
     stride = int(layer_info['stride'])
