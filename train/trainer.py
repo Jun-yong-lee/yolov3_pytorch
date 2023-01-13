@@ -6,11 +6,12 @@ from utils.tools import *
 
 
 class Trainer:
-    def __init__(self, model, train_loader, eval_loader, hparam):
+    def __init__(self, model, train_loader, eval_loader, hparam, device):
         self.model = model
         self.train_loader = train_loader
         self.eval_loader = eval_loader
         self.max_batch = hparam['max_batch']
+        self.device = device
         self.epoch = 0
         self.iter = 0
         self.optimizer = optim.SGD(model.parameters(), lr=hparam['lr'], momentum=hparam['momentum'])
@@ -26,7 +27,13 @@ class Trainer:
                 continue
             input_img, targets, anno_path = batch
             
-            print(input_img.shape, targets.shape)
+            input_img = input_img.to(self.device, non_blocking=True)
+            
+            output = self.model(input_img)
+            
+            # get loss between output and target
+            
+            print(f"output - len : {len(output)}, shape : {output[0].shape}")
         
     def run(self):
         while True:
