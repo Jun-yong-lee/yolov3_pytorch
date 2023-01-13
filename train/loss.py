@@ -8,6 +8,9 @@ class Yololoss(nn.Module):
         super(Yololoss, self).__init__()
         self.device = device
         self.num_class = num_class
+        self.mseloss = nn.MSELoss().to(device)
+        self.bceloss = nn.BCELoss().to(device)
+        self.bcelogloss = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0], device=device)).to(device)
         
     def compute_loss(self, pred, targets, yololayer):
         lcls, lbox, lobj = torch.zeros(1, device=self.device), torch.zeros(1, device=self.device), torch.zeros(1, device=self.device)
@@ -39,9 +42,38 @@ class Yololoss(nn.Module):
                 pwh = torch.exp(ps[...,2:4]) * tanchors[pidx]
                 pbox = torch.cat((pxy, pwh), 1)
                 # assignment
-                iou = bbox_iou(pbox, tbox[pidx])
+                print(pbox.shape, tbox[pidx].shape)
+                iou = bbox_iou(pbox.T, tbox[pidx], xyxy=False)
+                
+                # box loss
+                # MSE(Mean Squared Error)
+                # loss_wh = self.mseloss(pbox[..., 2:4], tbox[pidx][..., 2:4])
+                # loss_xy = self.mseloss(pbox[..., 0:2], tbox[pidx][..., 0:2])
+                lbox += (1 - iou).mean()
+                
+                # objectness
+                # gt box and predicted box -> positivie : 1 / negative -> 0 using IOU
+                tobj[batch_id, anchor_id, gy, gx] = iou.detach().clamp(0).type(tobj.dtype)
+                
+                # class loss
+                if ps.size(1) - 5 > 1:
+                    t = torch.zeros_like(ps[..., 5:], device=self.device)
+                    t[range(num_targets), tcls[pidx]] = 1
+                    # print("cls", t)
+                    # print("ps", ps[:, 5:])
+                    lcls += self.bcelogloss(ps[:, 5:], t)
+            lobj += self.bcelogloss(pout[..., 4], tobj)
 
-            
+        # loss weight
+        lcls *= 0.05
+        lobj *= 1.0
+        lbox *= 0.5
+        
+        # total loss
+        loss = lcls + lbox + lobj
+        loss_list = [loss.item(), lobj.item(), lcls.item(), lbox.item()]
+        
+        return loss, loss_list
 
             
     def get_targets(self, preds, targets, yololayer):

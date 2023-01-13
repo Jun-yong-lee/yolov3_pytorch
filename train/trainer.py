@@ -33,7 +33,7 @@ class Trainer:
             
             output = self.model(input_img)
             
-            self.yololoss.compute_loss(output, targets, self.model.yolo_layers)
+            loss, loss_list = self.yololoss.compute_loss(output, targets, self.model.yolo_layers)
             
             # get loss between output and target
             
