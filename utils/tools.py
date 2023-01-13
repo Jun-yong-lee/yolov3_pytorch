@@ -179,6 +179,7 @@ def non_max_suppression(prediction, conf_thresh=0.1, iou_thresh=0.1):
         box = cxcy2minmax(x[:, :4])
         
         conf, j = x[:, 5:].max(1, keepdim=True)
+        print(conf, j)
         x = torch.cat((box, conf, j.float()), dim=1)[conf.view(-1) > conf_thresh]
         
         # number of boxes
@@ -187,7 +188,7 @@ def non_max_suppression(prediction, conf_thresh=0.1, iou_thresh=0.1):
             continue
         elif n > max_nms:
             x = x[x[:, 4].argsort(descending=True)[:max_nms]]
-            
+        
         c = x[:, 5:6] * max_wh
         
         boxes, scores = x[:, :4] + c, x[:, 4]
