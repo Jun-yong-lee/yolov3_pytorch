@@ -19,10 +19,22 @@ class Trainer:
                                                                   milestones=[20,40,60],
                                                                   gamma=0.5)
 
+    def run_iter(self):
+        for i, batch in enumerate(self.train_loader):
+            # drop the batch when invalid values
+            if batch is None:
+                continue
+            input_img, targets, anno_path = batch
+            
+            print(input_img.shape, targets.shape)
+        
     def run(self):
         while True:
             self.model.train()
             # loss calculation
             
+            self.run_iter()
             self.epoch += 1
             
+
+        

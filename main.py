@@ -45,7 +45,8 @@ def train(cfg_param = None, using_gpus = None):
     model.train()
     model.initialize_weights()
 
-    train = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param)
+    trainer = Trainer(model=model, train_loader=train_loader, eval_loader=None, hparam=cfg_param)
+    trainer.run()
     
     # for name, param in model.named_parameters():
     #     print(f"name : {name}, shape : {param.shape}")
