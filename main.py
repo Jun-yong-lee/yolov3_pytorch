@@ -42,6 +42,7 @@ def train(cfg_param = None, using_gpus = None):
 
     model = Darknet53(args.cfg, cfg_param, training=True)
     model.train()
+    model.initialize_weights()
     for i, batch in enumerate(train_loader):
         img, targets, anno_path = batch
         
