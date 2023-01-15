@@ -6,3 +6,5 @@ log
 *38.pyc
 model/__pycache__/*
 pretrained/
+dataloader/__pycache__/*
+utils/__pycache__/*
