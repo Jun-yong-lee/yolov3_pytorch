@@ -67,9 +67,10 @@ class Trainer:
             
             with torch.no_grad():
                 output = self.model(input_img)
-                best_box_list = non_max_suppression(prediction=output, conf_thresh=0.7, iou_thresh=0.45)
                 
-                # print(f"eval output : {output.shape}, best_box_list : {len(best_box_list)}, {best_box_list[0].shape}")
+                best_box_list = non_max_suppression(prediction=output, conf_thresh=0.99, iou_thresh=0.99)
+                
+                print(f"eval output : {output.shape}, best_box_list : {len(best_box_list)}, {best_box_list[0].shape}")
         return    
     
     def run(self):
