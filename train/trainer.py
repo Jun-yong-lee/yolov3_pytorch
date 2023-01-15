@@ -7,6 +7,8 @@ from train.loss import *
 
 from tensorboardX import SummaryWriter
 
+from terminaltables import AsciiTable
+
 class Trainer:
     def __init__(self, model, train_loader, eval_loader, hparam, device, torch_writer):
         self.model = model
@@ -60,6 +62,9 @@ class Trainer:
         predict_all = []
         gt_labels = []
         for i, batch in enumerate(self.eval_loader):
+            if i == 3:
+                break
+            
             # drop the batch when invalid values
             if batch is None:
                 continue
@@ -74,27 +79,44 @@ class Trainer:
                 
                 print(f"eval output : {output.shape}, best_box_list : {len(best_box_list)}, {best_box_list[0].shape}")
             
+            gt_labels += targets[..., 1].tolist()
             targets[..., 2:6] = cxcy2minmax(targets[..., 2:6])
             input_wh = torch.tensor([input_img.shape[3], input_img.shape[2], input_img.shape[3], input_img.shape[2]]) # whwh
             targets[..., 2:6] *= input_wh
-            print(targets[..., 2:6])
+            # print(targets[..., 2:6])
             
             predict_all += get_batch_statistics(best_box_list, targets, iou_threshold=0.5)
+            
+        true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*predict_all))]
+        
+        # get map, recalls
+        metrics_output = ap_per_class(true_positives, pred_scores, pred_labels, gt_labels)
+        
+        if metrics_output is not None:
+            precision, recall, ap, f1, ap_class = metrics_output
+            ap_table = [['index', 'ap']]
+            for i, c in enumerate(ap_class):
+                ap_table += [[c, "%.5f" % ap[i]]]
+            
+            print(AsciiTable(ap_table).table)
+        
+        # print(metrics_output)
+        
         return    
     
     def run(self):
         while True:
             if self.max_batch <= self.iter:
                 break
-            
-            # evaluation
-            self.model.eval()
-            self.run_eval()
 
             self.model.train()
             # loss calculation
             loss = self.run_iter()
             self.epoch += 1
+            
+            # evaluation
+            self.model.eval()
+            self.run_eval()
             
             # save model (checkpoint)
             checkpoint_path = os.path.join("./output", "model_epoch" + str(self.epoch) + ".pth")
