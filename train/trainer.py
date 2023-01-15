@@ -29,6 +29,8 @@ class Trainer:
     def run_iter(self):
         for i, batch in enumerate(self.train_loader):
             # drop the batch when invalid values
+            if i > 3:
+                break
             if batch is None:
                 continue
             input_img, targets, anno_path = batch
@@ -62,8 +64,6 @@ class Trainer:
         predict_all = []
         gt_labels = []
         for i, batch in enumerate(self.eval_loader):
-            if i == 3:
-                break
             
             # drop the batch when invalid values
             if batch is None:
@@ -86,6 +86,8 @@ class Trainer:
             # print(targets[..., 2:6])
             
             predict_all += get_batch_statistics(best_box_list, targets, iou_threshold=0.5)
+        predict_all = torch.tensor(predict_all).to('cpu')
+            
             
         true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*predict_all))]
         
