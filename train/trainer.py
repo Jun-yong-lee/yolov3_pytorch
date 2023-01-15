@@ -9,6 +9,7 @@ from tensorboardX import SummaryWriter
 
 class Trainer:
     def __init__(self, model, train_loader, eval_loader, hparam, device, torch_writer):
+        
         self.model = model
         self.train_loader = train_loader
         self.eval_loader = eval_loader
