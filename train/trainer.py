@@ -57,6 +57,8 @@ class Trainer:
     
     # evalutation              
     def run_eval(self):
+        predict_all = []
+        gt_labels = []
         for i, batch in enumerate(self.eval_loader):
             # drop the batch when invalid values
             if batch is None:
@@ -68,9 +70,16 @@ class Trainer:
             with torch.no_grad():
                 output = self.model(input_img)
                 
-                best_box_list = non_max_suppression(prediction=output, conf_thresh=0.99, iou_thresh=0.99)
+                best_box_list = non_max_suppression(prediction=output, conf_thresh=0.4, iou_thresh=0.45)
                 
                 print(f"eval output : {output.shape}, best_box_list : {len(best_box_list)}, {best_box_list[0].shape}")
+            
+            targets[..., 2:6] = cxcy2minmax(targets[..., 2:6])
+            input_wh = torch.tensor([input_img.shape[3], input_img.shape[2], input_img.shape[3], input_img.shape[2]]) # whwh
+            targets[..., 2:6] *= input_wh
+            print(targets[..., 2:6])
+            
+            predict_all += get_batch_statistics(best_box_list, targets, iou_threshold=0.5)
         return    
     
     def run(self):

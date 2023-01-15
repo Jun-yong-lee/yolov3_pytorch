@@ -179,7 +179,6 @@ def non_max_suppression(prediction, conf_thresh=0.1, iou_thresh=0.1):
         box = cxcy2minmax(x[:, :4])
         
         conf, j = x[:, 5:].max(1, keepdim=True)
-        print(len(conf), len(j))
         x = torch.cat((box, conf, j.float()), dim=1)[conf.view(-1) > conf_thresh]
         
         # number of boxes
@@ -200,3 +199,38 @@ def non_max_suppression(prediction, conf_thresh=0.1, iou_thresh=0.1):
             
         output[xi] = x[i].detach().cpu()
     return output
+
+def get_batch_statistics(predicts, targets, iou_threshold=0.5):
+    batch_metrics = []
+    for p in range(len(predicts)):
+        if predicts[p] is None:
+            continue
+        
+        predict = predicts[p]
+        pred_boxes = predict[:, :4]
+        pred_scores = predict[:, 4]
+        pred_labels = predict[:, -1]
+        
+        true_positives = np.zeros(pred_boxes.shape[0])
+        
+        annotations = targets[targets[:, 0] == p][:, 1:]
+        target_labels = annotations[:, 0] if len(annotations) else []
+        
+        if len(annotations):
+            detected_boxes = []
+            target_boxes = annotations[:, 1:]
+            
+            for pred_i, (pred_box, pred_label) in enumerate(zip(pred_boxes, pred_labels)):
+                if len(detected_boxes) == len(annotations):
+                    break
+                
+                if pred_label not in target_labels:
+                    continue
+                
+                filtered_target_position, filtered_targets = zip(*filter(lambda x : target_labels[x[0]] == pred_label, enumerate(target_boxes)))
+                
+                print(filtered_target_position, filtered_targets)
+                
+                box_iou(pred_box, )
+                    
+    return
