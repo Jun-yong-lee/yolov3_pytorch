@@ -5,6 +5,7 @@ import tqdm
 import torch
 import torchvision
 
+
 # parse model configuration
 def parse_model_config(path):
     file = open(path, 'r')

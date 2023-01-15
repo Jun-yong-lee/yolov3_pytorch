@@ -79,7 +79,7 @@ def train(cfg_param = None, using_gpus = None):
     model.train()
     model.initialize_weights()
 
-    # print(f"GPU : {torch.cuda.is_available()}")
+    print(f"GPU : {torch.cuda.is_available()}")
     # set device
     if torch.cuda.is_available():
         # device = torch.device("cuda:0")
