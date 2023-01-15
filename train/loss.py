@@ -86,7 +86,7 @@ class Yololoss(nn.Module):
         # anchor_index
         ai = torch.arange(num_anc, device=targets.device).float().view(num_anc, 1).repeat(1, num_targets)
         # targets shape : [batch_id, class_id, box_cs, box_cy, box_w, box_h, anchor_id]
-        targets = torch.cat((targets.repeat(num_anc, 1, 1), ai[:, :, None]), 2)
+        targets = torch.cat((targets.repeat(num_anc, 1, 1), ai[:, :, None]), 2).to(device=self.device)
         
         for yi, yl in enumerate(yololayer):
             anchors = yl.anchor / yl.stride

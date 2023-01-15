@@ -82,7 +82,8 @@ def train(cfg_param = None, using_gpus = None):
     # print(f"GPU : {torch.cuda.is_available()}")
     # set device
     if torch.cuda.is_available():
-        device = torch.device("cuda:0")
+        # device = torch.device("cuda:0")
+        device = torch.device("cuda")
     else:
         device = torch.device("cpu")
         

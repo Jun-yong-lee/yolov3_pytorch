@@ -3,4 +3,6 @@ __pycache__/
 output/*
 log
 *.pyc
+*38.pyc
 model/__pycache__/*
+pretrained/
