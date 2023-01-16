@@ -4,12 +4,14 @@ import sys, os
 from PIL import Image
 import argparse
 
+# python masking.py --data_dir datasets\\train
+
 def parse_args():
     parser = argparse.ArgumentParser(description="MNIST")
     parser.add_argument('--data_dir', dest='data_dir', help="data directory",
                         default=None, type=str)
     parser.add_argument("--imgset", dest='imgset', help='imageset',
-                        default='all.txt', type=str)
+                        default='train.txt', type=str)
     parser.add_argument('--output_dir', dest='output_dir', help="output directory",
                         default='./output', type=str)
     if len(sys.argv) == 1:
@@ -36,8 +38,8 @@ def mask(img_path, img_name, box_path):
     img_wh = img.size
 
     if len(mask_box) == 0:
-        img.save(args.output_dir + "/" + img_name + ".png")
-        with open(args.output_dir + "/" + img_name + ".txt", 'w') as f:
+        img.save(args.output_dir + "\\" + img_name + ".png")
+        with open(args.output_dir + "\\" + img_name + ".txt", 'w') as f:
             for n in normal_box:
                 f.write(n)
         return
@@ -55,16 +57,16 @@ def mask(img_path, img_name, box_path):
         
         mask_img = Image.new(mode="RGB", size=(w,h), color=(128,128,128))
         img.paste(mask_img, (m[0],m[1]))
-    img.save(args.output_dir + "/" + img_name + ".png")
-    with open(args.output_dir + "/" + img_name + ".txt", 'w') as f:
+    img.save(args.output_dir + "\\" + img_name + ".png")
+    with open(args.output_dir + "\\" + img_name + ".txt", 'w') as f:
         for n in normal_box:
             f.write(n)
     return
 
 def main():
-    imgset = args.data_dir + "/ImageSets/" + args.imgset
-    img_folder = args.data_dir + "/JPEGImages/"
-    anno_folder = args.data_dir + "/Annotations/"
+    imgset = args.data_dir + "\\ImageSets\\" + args.imgset
+    img_folder = args.data_dir + "\\JPEGImages\\"
+    anno_folder = args.data_dir + "\\Annotations\\"
     
     img_name = []
     img_list = []
