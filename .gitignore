@@ -11,3 +11,6 @@ pretrained/
 __pycache__/
 *.npy
 *.dll
+datasets/Annotations
+datasets/ImagesSets
+datasets/JPEGImages
