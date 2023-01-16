@@ -227,7 +227,7 @@ class YoloLoss(nn.Module):
             a = t[:, 6].long()
             
             #add index list
-            indices.append((b, a, gj.clamp_(0,gain[3]-1), gi.clamp_(0,gain[2]-1)))
+            indices.append((b, a, gj.clamp(0,gain[3]-1).long(), gi.clamp(0,gain[2]-1).long()))
             
             #add target box
             tboxes.append(torch.cat((gxy-gij, gwh),1))
