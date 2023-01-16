@@ -11,6 +11,10 @@ pretrained/
 __pycache__/
 *.npy
 *.dll
-datasets/Annotations
-datasets/ImagesSets
-datasets/JPEGImages
+datasets/train/Annotations
+datasets/train/ImagesSets
+datasets/train/JPEGImages
+
+datasets/eval/JPEGImages
+datasets/eval/ImagesSets
+datasets/eval/Annotations

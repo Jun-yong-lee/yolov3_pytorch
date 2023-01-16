@@ -12,11 +12,12 @@ class Yolodata(Dataset):
     file_dir = ""
     anno_dir = ""
     file_txt = ""
-    train_dir = "C:\\data\\tstl_data"
-    train_txt = "all.txt"
-    valid_dir = "C:\\data\\tstl_eval"
-    valid_txt = "all.txt"
-    class_str = ['left', 'right', 'stop', 'crosswalk', 'uturn', 'traffic_light']
+    train_dir = "C:\\study_git\\yolov3_pytorch\\datasets\\train"
+    train_txt = "train.txt"
+    valid_dir = "C:\\study_git\\yolov3_pytorch\\datasets\\eval"
+    valid_txt = "eval.txt"
+    class_str = ['left', 'right', 'stop', 'crosswalk', 'traffic_light_car', 'traffic_light_ped', 'ignore']
+
     num_class = None
     img_data = []
     def __init__(self, is_train=True, transform=None, cfg_param=None):
