@@ -1,3 +1,5 @@
+# python main.py --gpus 0 --mode train --cfg yolov3-tiny_tstl_416.cfg --checkpoint ./output/model_epoch50.pth
+
 import os,sys
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
