@@ -26,7 +26,7 @@ class Demo:
             with torch.no_grad():
                 output = self.model(input_img)
                 best_box_list = non_max_suppression(output,
-                                                    conf_thres=0.4,
+                                                    conf_thres=0.2,
                                                     iou_thres=0.45)
 
                 for b in range(num_batch):

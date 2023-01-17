@@ -1,0 +1,7 @@
+left
+right
+stop
+crosswalk
+traffic_light_car
+traffic_light_ped
+ignore
