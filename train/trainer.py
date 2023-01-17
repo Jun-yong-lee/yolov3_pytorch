@@ -87,7 +87,7 @@ class Trainer:
             
             # predict_all += torch.tensor(get_batch_statistics(best_box_list, targets, iou_threshold=0.5))
             predict_all += get_batch_statistics(best_box_list, targets, iou_threshold=0.5)
-        predict_all = torch.tensor(predict_all).to('cpu') #
+        # predict_all = torch.tensor(predict_all).to('cpu') #
         
             
             
